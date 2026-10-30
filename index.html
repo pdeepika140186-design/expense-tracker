@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SpendWise – AI-Based Student Expense Tracker and Budget Advisor</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--tx:#1f2937;--mut:#6b7280;--bd:#e3e7ef;--nav:#1b2a49;--ac:#2f6bff;--ok:#22a06b;--wa:#f59e0b;--er:#e5484d;--pu:#7c5cfc;--tip:#fff7e6;--tipt:#7c4a03;--trk:#e5e7eb;--inp:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1420;--card:#192031;--tx:#e5e7eb;--mut:#9aa3b2;--bd:#27304a;--nav:#0b1020;--tip:#3a2d0f;--tipt:#fcd9a0;--trk:#2a334d;--inp:#111827;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1420;--card:#192031;--tx:#e5e7eb;--mut:#9aa3b2;--bd:#27304a;--nav:#0b1020;--tip:#3a2d0f;--tipt:#fcd9a0;--trk:#2a334d;--inp:#111827;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;background:var(--bg);color:var(--tx);display:grid;grid-template-columns:200px 1fr;min-height:100vh}
+nav{background:var(--nav);color:#fff;padding:18px 12px;position:sticky;top:env(safe-area-inset-top,0px);height:100vh}
+nav h1{font-size:18px;margin:4px 10px 18px}nav a{display:block;color:#c5cbe0;text-decoration:none;padding:10px 12px;border-radius:8px;margin-bottom:4px;font-size:14px}
+nav a.on{background:var(--ac);color:#fff;font-weight:600}
+main{padding:22px;max-width:1000px;width:100%}h2{margin:0 0 2px;font-size:22px}.sub{color:var(--mut);font-size:14px;margin:0 0 18px}
+.grid{display:grid;gap:14px}.g4{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px}.card h3{margin:0 0 12px;font-size:15px}
+.big{font-size:24px;font-weight:700}.mut{color:var(--mut);font-size:13px}
+.bar{height:9px;background:var(--trk);border-radius:6px;overflow:hidden;margin:6px 0}.bar i{display:block;height:100%;border-radius:6px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px}
+.ring{width:84px;height:84px;border-radius:50%;display:grid;place-items:center;flex:none}.ring b{background:var(--card);width:62px;height:62px;border-radius:50%;display:grid;place-items:center;font-size:17px}
+.tip{background:var(--tip);color:var(--tipt);border-radius:12px;padding:14px;font-size:14px;line-height:1.5}
+input,select,button{font:inherit;padding:9px 11px;border-radius:8px;border:1px solid var(--bd);background:var(--inp);color:var(--tx);min-width:0}
+button{background:var(--ac);color:#fff;border:0;cursor:pointer;font-weight:600}button.del{background:transparent;color:var(--er);padding:4px 8px}
+button.chip{background:transparent;color:var(--ac);border:1px solid var(--ac);border-radius:20px;font-size:13px;font-weight:500;padding:5px 12px}
+form.f{display:flex;flex-wrap:wrap;gap:10px}form.f>*{flex:1 1 130px}.err{color:var(--er);font-size:13px;min-height:18px;margin-top:6px}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--bd)}th{color:var(--mut);font-weight:600}
+.dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:8px}.scroll{overflow-x:auto}
+.ans{line-height:1.55;font-size:14.5px}.ans ul{margin:6px 0 0 18px;padding:0}.q{font-weight:600;margin-bottom:8px}
+.wk{display:flex;align-items:flex-end;gap:14px;height:170px;padding-top:10px}.wk div{flex:1;text-align:center;font-size:12px}.wk i{display:block;border-radius:6px;background:var(--ac);margin:0 auto 4px;width:70%}
+@media(max-width:720px){body{grid-template-columns:1fr}nav{height:auto;position:sticky;display:flex;gap:4px;overflow-x:auto;padding:8px;top:env(safe-area-inset-top,0px);z-index:5}nav h1{display:none}nav a{white-space:nowrap;margin:0}main{padding:14px}}
+</style></head><body>
+<nav><h1>💰 spendwise</h1><a href="#dashboard" data-v="dashboard">Dashboard</a><a href="#expenses" data-v="expenses">Expenses</a><a href="#budgets" data-v="budgets">Budgets &amp; Goals</a><a href="#advisor" data-v="advisor">AI Advisor</a><a href="#reports" data-v="reports">Reports</a></nav>
+<main id="app"></main>
+<script>
+const CATS={Food:"#f59e0b",Travel:"#2f6bff",Books:"#22a06b",Entertainment:"#e5484d",Others:"#7c5cfc"};
+const KEY="spendwise-v1";let S,chat=null;
+const $=s=>document.querySelector(s),inr=n=>"₹"+Math.round(n).toLocaleString("en-IN");
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pad=n=>String(n).padStart(2,"0"),fmt=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const now=new Date(),ym=now.getFullYear()+"-"+pad(now.getMonth()+1),dim=new Date(now.getFullYear(),now.getMonth()+1,0).getDate(),today=now.getDate();
+function seed(){const mk=(d,c,n,a)=>({id:Math.random().toString(36).slice(2),date:ym+"-"+pad(Math.min(d,today)),cat:c,note:n,amt:a});
+return{ex:[mk(2,"Food","Mess and canteen meals",900),mk(3,"Travel","Metro card recharge",300),mk(4,"Books","Textbook photocopy",220),mk(5,"Others","Phone recharge",239),mk(7,"Entertainment","Movie tickets",400),mk(9,"Food","Groceries and snacks",640),mk(10,"Books","Stationery",150),mk(11,"Travel","Auto fare",200),mk(12,"Food","Cafe",180),mk(13,"Entertainment","Game subscription",400),mk(14,"Others","Laundry",111),mk(16,"Food","Dinner with friends",260),mk(17,"Books","Notes printout",80),mk(18,"Travel","Metro card recharge",200),mk(19,"Entertainment","Movie tickets",350),mk(20,"Food","Lunch at canteen",120)],
+bud:{Food:3000,Travel:1200,Books:1000,Entertainment:1000,Others:800},goals:[{n:"Laptop Fund",s:4500,t:10000},{n:"Emergency Fund",s:2000,t:3000}]}}
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}if(!S||!S.ex)S=seed();
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const mon=()=>S.ex.filter(e=>e.date.startsWith(ym));
+function stats(){const m=mon(),by={};Object.keys(CATS).forEach(c=>by[c]=0);m.forEach(e=>by[e.cat]+=e.amt);
+const spent=Object.values(by).reduce((a,b)=>a+b,0),bud=Object.values(S.bud).reduce((a,b)=>a+b,0),rem=bud-spent,left=Math.max(dim-today+1,1);
+return{m,by,spent,bud,rem,pct:bud?spent/bud*100:0,daily:Math.max(rem,0)/left,proj:spent/today*dim}}
+const bar=(p,c)=>`<div class="bar"><i style="width:${Math.min(p,100)}%;background:${p>100?"var(--er)":c}"></i></div>`;
+function dash(){const s=stats(),over=Object.keys(CATS).filter(c=>s.by[c]>S.bud[c]);
+const tip=over.length?`Your <b>${over.join(", ")}</b> spending is over its limit. Cutting a couple of outings or purchases there can keep you inside your overall budget.`:`Great job – every category is within its limit. Keep about ${inr(s.daily)} per day for the rest of the month.`;
+return`<h2>Hello, Student! 👋</h2><p class="sub">Here’s your spending overview for this month.</p>
+<div class="grid g4"><div class="card"><div class="mut">Monthly Budget</div><div class="big">${inr(s.bud)}</div></div><div class="card"><div class="mut">Total Spent</div><div class="big" style="color:var(--wa)">${inr(s.spent)}</div></div><div class="card"><div class="mut">Remaining</div><div class="big" style="color:${s.rem<0?"var(--er)":"var(--ok)"}">${inr(s.rem)}</div></div>
+<div class="card row"><div class="ring" style="background:conic-gradient(${s.pct>100?"var(--er)":"var(--ac)"} ${Math.min(s.pct,100)*3.6}deg,var(--trk) 0)"><b>${Math.round(s.pct)}%</b></div><div><b>Budget Used</b><div class="mut">${inr(s.daily)}/day safe to spend</div></div></div></div>
+<div class="grid g2" style="margin-top:14px"><div class="card"><h3>Spending by Category</h3>${Object.keys(CATS).map(c=>`<div class="row"><span>${c}</span><span class="mut">${inr(s.by[c])} / ${inr(S.bud[c])}</span></div>${bar(s.by[c]/S.bud[c]*100,CATS[c])}`).join("")}</div>
+<div class="grid" style="align-content:start"><div class="card"><h3>Recent Expenses</h3>${s.m.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5).map(e=>`<div class="row" style="padding:5px 0"><span><i class="dot" style="background:${CATS[e.cat]}"></i>${esc(e.note)} <span class="mut">· ${e.cat}</span></span><b>${inr(e.amt)}</b></div>`).join("")||'<span class="mut">No expenses yet.</span>'}</div><div class="tip"><b>AI Budget Tip</b><br>${tip}</div></div></div>`}
+function exps(){return`<h2>Expense Manager</h2><p class="sub">Record your daily spending in seconds.</p>
+<div class="card"><form class="f" id="ef"><select id="ec">${Object.keys(CATS).map(c=>`<option>${c}</option>`).join("")}</select><input id="ea" type="number" step="any" placeholder="Amount (₹)"><input id="ed" type="date" value="${fmt(now)}"><input id="en" placeholder="Note (e.g. Lunch)" maxlength="60"><button>+ Add Expense</button></form><div class="err" id="er"></div></div>
+<div class="card scroll" style="margin-top:14px"><h3>All Expenses</h3><table><tr><th>Category</th><th>Note</th><th>Date</th><th>Amount</th><th></th></tr>${S.ex.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(e=>`<tr><td><i class="dot" style="background:${CATS[e.cat]}"></i>${e.cat}</td><td>${esc(e.note)}</td><td>${e.date}</td><td><b>${inr(e.amt)}</b></td><td><button class="del" data-del="${e.id}">Delete</button></td></tr>`).join("")}</table></div>`}
+function buds(){const s=stats();return`<h2>Budget Planner</h2><p class="sub">Set category limits and track your savings goals.</p><div class="grid g2">${Object.keys(CATS).map(c=>{const p=s.by[c]/S.bud[c]*100,o=p>100;return`<div class="card"><div class="row"><b><i class="dot" style="background:${CATS[c]}"></i>${c}</b><b style="color:${o?"var(--er)":"inherit"}">${Math.round(p)}%</b></div>${bar(p,CATS[c])}<div class="row"><span class="mut">Spent ${inr(s.by[c])}</span><span style="color:${o?"var(--er)":"var(--ok)"};font-weight:600">${o?"Over budget!":inr(S.bud[c]-s.by[c])+" left"}</span></div><div class="row" style="margin-top:10px"><span class="mut">Limit ₹</span><input type="number" min="0" value="${S.bud[c]}" data-bud="${c}" style="width:110px"></div></div>`}).join("")}</div>
+<h3 style="margin:22px 0 10px">Savings Goals</h3><div class="grid g2">${S.goals.map((g,i)=>`<div class="card"><div class="row"><b>${esc(g.n)}</b><b>${Math.round(g.s/g.t*100)}%</b></div>${bar(g.s/g.t*100,"var(--ok)")}<div class="mut">Saved ${inr(g.s)} of ${inr(g.t)}</div><div class="row" style="margin-top:10px"><input type="number" min="1" placeholder="Amount ₹" id="ga${i}" style="flex:1"><button data-goal="${i}">Add to Goal</button></div></div>`).join("")}</div>`}
+function advise(q){const s=stats(),t=q.toLowerCase(),L=[];let h="";
+const over=Object.keys(CATS).filter(c=>s.by[c]>S.bud[c]);
+if(/food|eat|mess|canteen|meal|hostel/.test(t)){const f=s.by.Food;h=`Food is ${inr(f)} this month (${s.spent?Math.round(f/s.spent*100):0}% of your spending). Practical ways to bring it down:`;L.push("Eat in the mess or canteen on weekdays; limit eating out to about 2 days a week.","Buy snacks and water in bulk instead of small daily purchases.",`Set a daily food limit of about ${inr(S.bud.Food/dim)} and log it in Expenses.`,"Split group orders with friends to cut delivery fees.","Estimated saving: around ₹500 per month.")}
+else if(/entertain|movie|fun|game|outing/.test(t)){h=`Entertainment is ${inr(s.by.Entertainment)} against a ${inr(S.bud.Entertainment)} limit.`;L.push("Pick one paid outing a week and use free campus events for the rest.","Share subscriptions with friends or pause the ones you rarely use.","Look for student discounts before booking tickets.")}
+else if(/travel|transport|metro|bus|auto/.test(t)){h=`Travel is ${inr(s.by.Travel)} this month.`;L.push("Use a monthly pass or card recharge instead of auto fares.","Walk or share rides for short trips and combine errands.")}
+else if(/sav|goal|laptop|invest/.test(t)){const g=S.goals[0];h=`You have ${inr(Math.max(s.rem,0))} left in this month’s budget.`;L.push(`Move about ${inr(Math.max(s.rem,0)*0.3)} (30%) of what is left into “${g?esc(g.n):"your goal"}” at month end.`,"Save first, spend later: transfer to savings right after you receive your allowance.","Even ₹50 a day adds up to ₹1,500 in a month.")}
+else if(/why|over|exceed|too much|spend/.test(t)){h=over.length?`You are over budget in: ${over.join(", ")}.`:"You are within every category limit right now.";L.push(`At the current pace you will spend about ${inr(s.proj)} by month end against a budget of ${inr(s.bud)}.`,s.proj>s.bud?`To stay on track, keep daily spending near ${inr(s.daily)} for the remaining days.`:"Keep the same pace and you will finish within budget.")}
+else{h=`This month you have spent ${inr(s.spent)} of ${inr(s.bud)} (${Math.round(s.pct)}%).`;L.push(`Safe daily spending for the rest of the month: ${inr(s.daily)}.`,`Projected month-end spending: ${inr(s.proj)}.`,over.length?`Watch out: ${over.join(", ")} already crossed the limit.`:"All categories are within their limits.","Try asking: “How can I reduce my food spending?” or “Plan my savings”.")}
+return`<div class="ans">${h}<ul>${L.map(x=>`<li>${x}</li>`).join("")}</ul></div>`}
+function adv(){return`<h2>AI Budget Advisor</h2><p class="sub">Ask money questions and get guidance based on your own spending data.</p><div class="card"><form class="f" id="af"><input id="aq" placeholder="e.g. How can I reduce my food spending as a hostel student?" style="flex:4 1 260px"><button>Ask</button></form><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">${["Why am I overspending?","Plan my savings","How can I reduce my food spending?","Weekly budget tips"].map(c=>`<button class="chip" data-chip="${c}">${c}</button>`).join("")}</div></div>${chat?`<div class="card" style="margin-top:14px"><div class="q">Q: ${esc(chat.q)}</div>${chat.a}</div>`:""}`}
+function reps(){const s=stats(),tot=s.spent||1;let a=0;const seg=Object.keys(CATS).map(c=>{const d=s.by[c]/tot*360,r=`${CATS[c]} ${a}deg ${a+d}deg`;a+=d;return r}).join(",");
+const wk=[0,0,0,0,0];s.m.forEach(e=>wk[Math.min(Math.ceil(+e.date.slice(8)/7),5)-1]+=e.amt);const mx=Math.max(...wk,1);
+return`<h2>Spending Reports</h2><p class="sub">Understand where your money goes.</p><div class="grid g2"><div class="card"><h3>Spending by Category</h3><div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap"><div class="ring" style="width:150px;height:150px;background:conic-gradient(${seg})"><b style="width:100px;height:100px;font-size:15px;text-align:center">${inr(s.spent)}</b></div><div style="flex:1;min-width:150px">${Object.keys(CATS).map(c=>`<div class="row" style="padding:3px 0"><span><i class="dot" style="background:${CATS[c]}"></i>${c}</span><span><b>${inr(s.by[c])}</b> <span class="mut">${Math.round(s.by[c]/tot*100)}%</span></span></div>`).join("")}</div></div></div>
+<div class="card"><h3>Weekly Spending Trend</h3><div class="wk">${wk.map((v,i)=>`<div><b>${v?inr(v):""}</b><i style="height:${v/mx*120}px"></i>Week ${i+1}</div>`).join("")}</div></div>
+<div class="card"><h3>Monthly Summary</h3>${[["Budget",inr(s.bud)],["Spent",inr(s.spent)],["Remaining",inr(s.rem)],["Projected month-end",inr(s.proj)]].map(r=>`<div class="row" style="padding:4px 0"><span class="mut">${r[0]}</span><b>${r[1]}</b></div>`).join("")}</div></div>`}
+const V={dashboard:dash,expenses:exps,budgets:buds,advisor:adv,reports:reps};
+function render(){let v=location.hash.slice(1);if(!V[v])v="dashboard";$("#app").innerHTML=V[v]();document.querySelectorAll("nav a").forEach(a=>a.classList.toggle("on",a.dataset.v===v));}
+addEventListener("hashchange",render);
+document.addEventListener("submit",e=>{e.preventDefault();
+if(e.target.id==="ef"){const a=parseFloat($("#ea").value),n=$("#en").value.trim(),d=$("#ed").value;
+if(!(a>0)){$("#er").textContent="Enter a positive amount.";return}if(!n){$("#er").textContent="Please add a short note.";return}if(!d){$("#er").textContent="Please choose a date.";return}
+S.ex.push({id:Math.random().toString(36).slice(2),date:d,cat:$("#ec").value,note:n,amt:a});save();render()}
+if(e.target.id==="af"){const q=$("#aq").value.trim();if(!q)return;chat={q,a:advise(q)};render()}});
+document.addEventListener("click",e=>{const t=e.target;
+if(t.dataset.del){S.ex=S.ex.filter(x=>x.id!==t.dataset.del);save();render()}
+if(t.dataset.chip){chat={q:t.dataset.chip,a:advise(t.dataset.chip)};render()}
+if(t.dataset.goal!==undefined){const i=+t.dataset.goal,v=parseFloat($("#ga"+i).value);if(v>0){S.goals[i].s=Math.min(S.goals[i].s+v,S.goals[i].t);save();render()}}});
+document.addEventListener("change",e=>{const c=e.target.dataset.bud;if(c){const v=parseFloat(e.target.value);if(v>=0){S.bud[c]=v;save();render()}}});
+render();
+</script></body></html>
